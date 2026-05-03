@@ -1,426 +1,619 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lead Channel Replacement Dashboard</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-      background: #f5f5f5;
-      color: #2c2c2a;
-      line-height: 1.6;
-    }
-    
-    .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-    
-    .header {
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      border: 0.5px solid #d3d1c7;
-    }
-    
-    .title { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
-    .subtitle { font-size: 13px; color: #888780; margin-bottom: 16px; }
-    
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-      margin-top: 16px;
-    }
-    
-    .kpi-card {
-      background: #f9f8f5;
-      padding: 14px;
-      border-radius: 8px;
-      border-left: 3px solid #378ADD;
-    }
-    
-    .kpi-label { font-size: 10px; color: #888780; text-transform: uppercase; margin-bottom: 5px; }
-    .kpi-value { font-size: 20px; font-weight: 600; color: #2c2c2a; }
-    .kpi-sub { font-size: 11px; color: #888780; margin-top: 3px; }
-    
-    .slider-container {
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      border: 0.5px solid #d3d1c7;
-      margin-bottom: 20px;
-    }
-    
-    .slider-group {
-      margin-bottom: 16px;
-      padding-bottom: 16px;
-      border-bottom: 0.5px solid #e8e7e0;
-    }
-    
-    .slider-group:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-    
-    .slider-label { font-size: 12px; font-weight: 600; margin-bottom: 6px; display: flex; justify-content: space-between; }
-    .slider-value { font-size: 11px; color: #888780; margin-top: 4px; }
-    
-    input[type="range"] { width: 100%; }
-    
-    .charts-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-    
-    .chart-container {
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      border: 0.5px solid #d3d1c7;
-    }
-    
-    .chart-title { font-size: 13px; font-weight: 600; margin-bottom: 14px; color: #2c2c2a; }
-    
-    .table-container {
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      border: 0.5px solid #d3d1c7;
-      overflow-x: auto;
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-    }
-    
-    th {
-      background: #f9f8f5;
-      padding: 10px;
-      text-align: left;
-      font-weight: 600;
-      color: #2c2c2a;
-      border-bottom: 1px solid #d3d1c7;
-    }
-    
-    td {
-      padding: 10px;
-      border-bottom: 0.5px solid #e8e7e0;
-    }
-    
-    tr:hover { background: #f9f8f5; }
-    
-    .number { text-align: right; }
-    .channel-name { font-weight: 500; }
-    .lost-channel { color: #999; text-decoration: line-through; }
-    
-    .warning { background: #FAEEDA; border-left: 3px solid #BA7517; padding: 12px; border-radius: 6px; margin-bottom: 20px; }
-    .warning-text { font-size: 12px; color: #633806; }
-    
-    .total-box { margin-top: 14px; padding: 10px; background: #f9f8f5; border-radius: 6px; font-size: 12px; color: #888780; }
-    .total-box strong { color: #2c2c2a; }
-  </style>
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lead Channel Replacement Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+        background: #f5f5f5;
+        color: #2c2c2a;
+        line-height: 1.6;
+      }
 
-<body>
-  <div class="container">
-    <div class="header">
-      <h1 class="title">Lead Channel Replacement Strategy</h1>
-      <p class="subtitle">Replace 75 Facebook leads with alternative channels + remaining Facebook</p>
-      
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <div class="kpi-label">Leads Target</div>
-          <div class="kpi-value">75</div>
-          <div class="kpi-sub">Total needed monthly</div>
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header {
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        border: 0.5px solid #d3d1c7;
+      }
+
+      .title {
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      .subtitle {
+        font-size: 13px;
+        color: #888780;
+        margin-bottom: 16px;
+      }
+
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .kpi-card {
+        background: #f9f8f5;
+        padding: 14px;
+        border-radius: 8px;
+        border-left: 3px solid #378add;
+      }
+
+      .kpi-label {
+        font-size: 10px;
+        color: #888780;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+      }
+      .kpi-value {
+        font-size: 20px;
+        font-weight: 600;
+        color: #2c2c2a;
+      }
+      .kpi-sub {
+        font-size: 11px;
+        color: #888780;
+        margin-top: 3px;
+      }
+
+      .slider-container {
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        border: 0.5px solid #d3d1c7;
+        margin-bottom: 20px;
+      }
+
+      .slider-group {
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+        border-bottom: 0.5px solid #e8e7e0;
+      }
+
+      .slider-group:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+
+      .slider-label {
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .slider-value {
+        font-size: 11px;
+        color: #888780;
+        margin-top: 4px;
+      }
+
+      input[type="range"] {
+        width: 100%;
+      }
+
+      .charts-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+
+      .chart-container {
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        border: 0.5px solid #d3d1c7;
+      }
+
+      .chart-title {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 14px;
+        color: #2c2c2a;
+      }
+
+      .table-container {
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        border: 0.5px solid #d3d1c7;
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+
+      th {
+        background: #f9f8f5;
+        padding: 10px;
+        text-align: left;
+        font-weight: 600;
+        color: #2c2c2a;
+        border-bottom: 1px solid #d3d1c7;
+      }
+
+      td {
+        padding: 10px;
+        border-bottom: 0.5px solid #e8e7e0;
+      }
+
+      tr:hover {
+        background: #f9f8f5;
+      }
+
+      .number {
+        text-align: right;
+      }
+      .channel-name {
+        font-weight: 500;
+      }
+      .lost-channel {
+        color: #999;
+        text-decoration: line-through;
+      }
+
+      .warning {
+        background: #faeeda;
+        border-left: 3px solid #ba7517;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+      }
+      .warning-text {
+        font-size: 12px;
+        color: #633806;
+      }
+
+      .total-box {
+        margin-top: 14px;
+        padding: 10px;
+        background: #f9f8f5;
+        border-radius: 6px;
+        font-size: 12px;
+        color: #888780;
+      }
+      .total-box strong {
+        color: #2c2c2a;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1 class="title">Lead Channel Replacement Strategy</h1>
+        <p class="subtitle">
+          Replace 75 Facebook leads with alternative channels + remaining
+          Facebook
+        </p>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Leads Target</div>
+            <div class="kpi-value">75</div>
+            <div class="kpi-sub">Total needed monthly</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Target Deals</div>
+            <div class="kpi-value">6</div>
+            <div class="kpi-sub">At 8% close rate</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Revenue Target</div>
+            <div class="kpi-value">$8K</div>
+            <div class="kpi-sub">~$1,333 per deal</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Close Rate</div>
+            <div class="kpi-value">8%</div>
+            <div class="kpi-sub">Consistent across channels</div>
+          </div>
         </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Target Deals</div>
-          <div class="kpi-value">6</div>
-          <div class="kpi-sub">At 8% close rate</div>
+      </div>
+
+      <div class="warning">
+        <div class="warning-text">
+          <strong>Status:</strong> Facebook algorithm drop-off. Rebuilding with
+          multi-channel approach. Facebook contributing 20 leads/month now.
         </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Revenue Target</div>
-          <div class="kpi-value">$8K</div>
-          <div class="kpi-sub">~$1,333 per deal</div>
+      </div>
+
+      <div class="slider-container">
+        <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 16px">
+          Adjust Lead Distribution by Channel
+        </h3>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>Bandit Signs</span>
+            <span id="banditValue">40</span>
+          </div>
+          <input
+            type="range"
+            id="banditSlider"
+            min="0"
+            max="75"
+            value="40"
+            oninput="updateCharts()"
+          />
         </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Close Rate</div>
-          <div class="kpi-value">8%</div>
-          <div class="kpi-sub">Consistent across channels</div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>Brochures</span>
+            <span id="brochureValue">0</span>
+          </div>
+          <input
+            type="range"
+            id="brochureSlider"
+            min="0"
+            max="75"
+            value="0"
+            oninput="updateCharts()"
+          />
         </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>Business Cards</span>
+            <span id="cardValue">0</span>
+          </div>
+          <input
+            type="range"
+            id="cardSlider"
+            min="0"
+            max="75"
+            value="0"
+            oninput="updateCharts()"
+          />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>Networking Events</span>
+            <span id="networkValue">0</span>
+          </div>
+          <input
+            type="range"
+            id="networkSlider"
+            min="0"
+            max="75"
+            value="0"
+            oninput="updateCharts()"
+          />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>Booths & Stands</span>
+            <span id="boothValue">5</span>
+          </div>
+          <input
+            type="range"
+            id="boothSlider"
+            min="0"
+            max="75"
+            value="5"
+            oninput="updateCharts()"
+          />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>TV/Radio</span>
+            <span id="tvValue">0</span>
+          </div>
+          <input
+            type="range"
+            id="tvSlider"
+            min="0"
+            max="75"
+            value="0"
+            oninput="updateCharts()"
+          />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>YouTube</span>
+            <span id="youtubeValue">0</span>
+          </div>
+          <input
+            type="range"
+            id="youtubeSlider"
+            min="0"
+            max="75"
+            value="0"
+            oninput="updateCharts()"
+          />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>Podcasting</span>
+            <span id="podcastValue">0</span>
+          </div>
+          <input
+            type="range"
+            id="podcastSlider"
+            min="0"
+            max="75"
+            value="0"
+            oninput="updateCharts()"
+          />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>TikTok</span>
+            <span id="tiktokValue">0</span>
+          </div>
+          <input
+            type="range"
+            id="tiktokSlider"
+            min="0"
+            max="75"
+            value="0"
+            oninput="updateCharts()"
+          />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>Instagram</span>
+            <span id="instagramValue">10</span>
+          </div>
+          <input
+            type="range"
+            id="instagramSlider"
+            min="0"
+            max="75"
+            value="10"
+            oninput="updateCharts()"
+          />
+        </div>
+
+        <div class="slider-group" style="border-bottom: none">
+          <div class="slider-label">
+            <span>Facebook</span>
+            <span id="facebookValue">20</span>
+          </div>
+          <input
+            type="range"
+            id="facebookSlider"
+            min="0"
+            max="75"
+            value="20"
+            oninput="updateCharts()"
+          />
+          <div class="slider-value">Remaining organic reach</div>
+        </div>
+
+        <div class="total-box">
+          Total allocated: <strong id="totalAllocated">75</strong> / 75 leads
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-container">
+          <div class="chart-title">Lead Distribution by Channel</div>
+          <canvas id="barChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-title">
+            Estimated Deals by Channel (8% close rate)
+          </div>
+          <canvas id="dealsChart"></canvas>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div class="chart-title">Channel Breakdown</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Channel</th>
+              <th class="number">Leads</th>
+              <th class="number">Deals (8%)</th>
+              <th class="number">Est. Invoiced Amount</th>
+              <th class="number">% of Total</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
       </div>
     </div>
 
-    <div class="warning">
-      <div class="warning-text"><strong>Status:</strong> Facebook algorithm drop-off. Rebuilding with multi-channel approach. Facebook contributing 20 leads/month now.</div>
-    </div>
-    
-    <div class="slider-container">
-      <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 16px;">Adjust Lead Distribution by Channel</h3>
-      
-      <div class="slider-group">
-        <div class="slider-label">
-          <span>Bandit Signs</span>
-          <span id="banditValue">40</span>
-        </div>
-        <input type="range" id="banditSlider" min="0" max="75" value="40" oninput="updateCharts()">
-      </div>
-      
-      <div class="slider-group">
-        <div class="slider-label">
-          <span>Brochures</span>
-          <span id="brochureValue">0</span>
-        </div>
-        <input type="range" id="brochureSlider" min="0" max="75" value="0" oninput="updateCharts()">
-      </div>
-      
-      <div class="slider-group">
-        <div class="slider-label">
-          <span>Business Cards</span>
-          <span id="cardValue">0</span>
-        </div>
-        <input type="range" id="cardSlider" min="0" max="75" value="0" oninput="updateCharts()">
-      </div>
-      
-      <div class="slider-group">
-        <div class="slider-label">
-          <span>Networking Events</span>
-          <span id="networkValue">0</span>
-        </div>
-        <input type="range" id="networkSlider" min="0" max="75" value="0" oninput="updateCharts()">
-      </div>
-      
-      <div class="slider-group">
-        <div class="slider-label">
-          <span>Booths & Stands</span>
-          <span id="boothValue">5</span>
-        </div>
-        <input type="range" id="boothSlider" min="0" max="75" value="5" oninput="updateCharts()">
-      </div>
-      
-      <div class="slider-group">
-        <div class="slider-label">
-          <span>TV/Radio</span>
-          <span id="tvValue">0</span>
-        </div>
-        <input type="range" id="tvSlider" min="0" max="75" value="0" oninput="updateCharts()">
-      </div>
-      
-      <div class="slider-group">
-        <div class="slider-label">
-          <span>YouTube</span>
-          <span id="youtubeValue">0</span>
-        </div>
-        <input type="range" id="youtubeSlider" min="0" max="75" value="0" oninput="updateCharts()">
-      </div>
-      
-      <div class="slider-group">
-        <div class="slider-label">
-          <span>Podcasting</span>
-          <span id="podcastValue">0</span>
-        </div>
-        <input type="range" id="podcastSlider" min="0" max="75" value="0" oninput="updateCharts()">
-      </div>
-      
-      <div class="slider-group">
-        <div class="slider-label">
-          <span>TikTok</span>
-          <span id="tiktokValue">0</span>
-        </div>
-        <input type="range" id="tiktokSlider" min="0" max="75" value="0" oninput="updateCharts()">
-      </div>
-      
-      <div class="slider-group">
-        <div class="slider-label">
-          <span>Instagram</span>
-          <span id="instagramValue">10</span>
-        </div>
-        <input type="range" id="instagramSlider" min="0" max="75" value="10" oninput="updateCharts()">
-      </div>
-      
-      <div class="slider-group" style="border-bottom: none;">
-        <div class="slider-label">
-          <span>Facebook</span>
-          <span id="facebookValue">20</span>
-        </div>
-        <input type="range" id="facebookSlider" min="0" max="75" value="20" oninput="updateCharts()">
-        <div class="slider-value">Remaining organic reach</div>
-      </div>
-      
-      <div class="total-box">
-        Total allocated: <strong id="totalAllocated">75</strong> / 75 leads
-      </div>
-    </div>
-    
-    <div class="charts-grid">
-      <div class="chart-container">
-        <div class="chart-title">Lead Distribution by Channel</div>
-        <canvas id="barChart"></canvas>
-      </div>
-      
-      <div class="chart-container">
-        <div class="chart-title">Estimated Deals by Channel (8% close rate)</div>
-        <canvas id="dealsChart"></canvas>
-      </div>
-    </div>
-    
-    <div class="table-container">
-      <div class="chart-title">Channel Breakdown</div>
-      <table>
-        <thead>
-          <tr>
-            <th>Channel</th>
-            <th class="number">Leads</th>
-            <th class="number">Deals (8%)</th>
-            <th class="number">Est. Revenue</th>
-            <th class="number">% of Total</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <script>
-    const channelColors = {
-      'Bandit Signs': '#378ADD',
-      'Brochures': '#639922',
-      'Business Cards': '#BA7517',
-      'Networking Events': '#7F77DD',
-      'Booths & Stands': '#D85A30',
-      'TV/Radio': '#E84C3D',
-      'YouTube': '#FF0000',
-      'Podcasting': '#9C27B0',
-      'TikTok': '#000000',
-      'Instagram': '#E4405F',
-      'Facebook': '#1877F2'
-    };
-
-    function updateCharts() {
-      const bandit = parseInt(document.getElementById('banditSlider').value);
-      const brochure = parseInt(document.getElementById('brochureSlider').value);
-      const cards = parseInt(document.getElementById('cardSlider').value);
-      const network = parseInt(document.getElementById('networkSlider').value);
-      const booth = parseInt(document.getElementById('boothSlider').value);
-      const tv = parseInt(document.getElementById('tvSlider').value);
-      const youtube = parseInt(document.getElementById('youtubeSlider').value);
-      const podcast = parseInt(document.getElementById('podcastSlider').value);
-      const tiktok = parseInt(document.getElementById('tiktokSlider').value);
-      const instagram = parseInt(document.getElementById('instagramSlider').value);
-      const facebook = parseInt(document.getElementById('facebookSlider').value);
-
-      document.getElementById('banditValue').textContent = bandit;
-      document.getElementById('brochureValue').textContent = brochure;
-      document.getElementById('cardValue').textContent = cards;
-      document.getElementById('networkValue').textContent = network;
-      document.getElementById('boothValue').textContent = booth;
-      document.getElementById('tvValue').textContent = tv;
-      document.getElementById('youtubeValue').textContent = youtube;
-      document.getElementById('podcastValue').textContent = podcast;
-      document.getElementById('tiktokValue').textContent = tiktok;
-      document.getElementById('instagramValue').textContent = instagram;
-      document.getElementById('facebookValue').textContent = facebook;
-
-      const total = bandit + brochure + cards + network + booth + tv + youtube + podcast + tiktok + instagram + facebook;
-      document.getElementById('totalAllocated').textContent = total;
-
-      const channels = {
-        'Bandit Signs': bandit,
-        'Brochures': brochure,
-        'Business Cards': cards,
-        'Networking Events': network,
-        'Booths & Stands': booth,
-        'TV/Radio': tv,
-        'YouTube': youtube,
-        'Podcasting': podcast,
-        'TikTok': tiktok,
-        'Instagram': instagram,
-        'Facebook': facebook
+    <script>
+      const channelColors = {
+        "Bandit Signs": "#378ADD",
+        Brochures: "#639922",
+        "Business Cards": "#BA7517",
+        "Networking Events": "#7F77DD",
+        "Booths & Stands": "#D85A30",
+        "TV/Radio": "#E84C3D",
+        YouTube: "#FF0000",
+        Podcasting: "#9C27B0",
+        TikTok: "#000000",
+        Instagram: "#E4405F",
+        Facebook: "#1877F2",
       };
 
-      drawBarChart(channels);
-      drawDealsChart(channels);
-      populateTable(channels, total);
-    }
+      function updateCharts() {
+        const bandit = parseInt(document.getElementById("banditSlider").value);
+        const brochure = parseInt(
+          document.getElementById("brochureSlider").value,
+        );
+        const cards = parseInt(document.getElementById("cardSlider").value);
+        const network = parseInt(
+          document.getElementById("networkSlider").value,
+        );
+        const booth = parseInt(document.getElementById("boothSlider").value);
+        const tv = parseInt(document.getElementById("tvSlider").value);
+        const youtube = parseInt(
+          document.getElementById("youtubeSlider").value,
+        );
+        const podcast = parseInt(
+          document.getElementById("podcastSlider").value,
+        );
+        const tiktok = parseInt(document.getElementById("tiktokSlider").value);
+        const instagram = parseInt(
+          document.getElementById("instagramSlider").value,
+        );
+        const facebook = parseInt(
+          document.getElementById("facebookSlider").value,
+        );
 
-    function drawBarChart(channels) {
-      const ctx = document.getElementById('barChart').getContext('2d');
-      if (window.barChartInstance) window.barChartInstance.destroy();
+        document.getElementById("banditValue").textContent = bandit;
+        document.getElementById("brochureValue").textContent = brochure;
+        document.getElementById("cardValue").textContent = cards;
+        document.getElementById("networkValue").textContent = network;
+        document.getElementById("boothValue").textContent = booth;
+        document.getElementById("tvValue").textContent = tv;
+        document.getElementById("youtubeValue").textContent = youtube;
+        document.getElementById("podcastValue").textContent = podcast;
+        document.getElementById("tiktokValue").textContent = tiktok;
+        document.getElementById("instagramValue").textContent = instagram;
+        document.getElementById("facebookValue").textContent = facebook;
 
-      const labels = Object.keys(channels).filter(k => channels[k] > 0);
-      const data = labels.map(l => channels[l]);
+        const total =
+          bandit +
+          brochure +
+          cards +
+          network +
+          booth +
+          tv +
+          youtube +
+          podcast +
+          tiktok +
+          instagram +
+          facebook;
+        document.getElementById("totalAllocated").textContent = total;
 
-      window.barChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Leads',
-            data: data,
-            backgroundColor: labels.map(l => channelColors[l])
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          indexAxis: 'y',
-          plugins: {
-            legend: { display: false }
+        const channels = {
+          "Bandit Signs": bandit,
+          Brochures: brochure,
+          "Business Cards": cards,
+          "Networking Events": network,
+          "Booths & Stands": booth,
+          "TV/Radio": tv,
+          YouTube: youtube,
+          Podcasting: podcast,
+          TikTok: tiktok,
+          Instagram: instagram,
+          Facebook: facebook,
+        };
+
+        drawBarChart(channels);
+        drawDealsChart(channels);
+        populateTable(channels, total);
+      }
+
+      function drawBarChart(channels) {
+        const ctx = document.getElementById("barChart").getContext("2d");
+        if (window.barChartInstance) window.barChartInstance.destroy();
+
+        const labels = Object.keys(channels).filter((k) => channels[k] > 0);
+        const data = labels.map((l) => channels[l]);
+
+        window.barChartInstance = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: "Leads",
+                data: data,
+                backgroundColor: labels.map((l) => channelColors[l]),
+              },
+            ],
           },
-          scales: {
-            x: {
-              max: 75
-            }
-          }
-        }
-      });
-    }
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            indexAxis: "y",
+            plugins: {
+              legend: { display: false },
+            },
+            scales: {
+              x: {
+                max: 75,
+              },
+            },
+          },
+        });
+      }
 
-    function drawDealsChart(channels) {
-      const ctx = document.getElementById('dealsChart').getContext('2d');
-      if (window.dealsChartInstance) window.dealsChartInstance.destroy();
+      function drawDealsChart(channels) {
+        const ctx = document.getElementById("dealsChart").getContext("2d");
+        if (window.dealsChartInstance) window.dealsChartInstance.destroy();
 
-      const labels = Object.keys(channels).filter(k => channels[k] > 0);
-      const deals = labels.map(l => Math.round(channels[l] * 0.08));
+        const labels = Object.keys(channels).filter((k) => channels[k] > 0);
+        const deals = labels.map((l) => Math.round(channels[l] * 0.08));
 
-      window.dealsChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Deals',
-            data: deals,
-            backgroundColor: labels.map(l => channelColors[l])
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          indexAxis: 'y',
-          plugins: {
-            legend: { display: false }
-          }
-        }
-      });
-    }
+        window.dealsChartInstance = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: "Deals",
+                data: deals,
+                backgroundColor: labels.map((l) => channelColors[l]),
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            indexAxis: "y",
+            plugins: {
+              legend: { display: false },
+            },
+          },
+        });
+      }
 
-    function populateTable(channels, total) {
-      const tbody = document.getElementById('tableBody');
-      const avgDealValue = 1333;
+      function populateTable(channels, total) {
+        const tbody = document.getElementById("tableBody");
+        const avgDealValue = 1333;
 
-      let html = '';
-      
-      Object.entries(channels).forEach(([channel, leads]) => {
-        if (leads === 0) return;
-        
-        const deals = Math.round(leads * 0.08);
-        const revenue = deals * avgDealValue;
-        const percent = ((leads / total) * 100).toFixed(1);
+        let html = "";
 
-        html += `
+        Object.entries(channels).forEach(([channel, leads]) => {
+          if (leads === 0) return;
+
+          const deals = Math.round(leads * 0.08);
+          const revenue = deals * avgDealValue;
+          const percent = ((leads / total) * 100).toFixed(1);
+
+          html += `
           <tr>
             <td class="channel-name">${channel}</td>
             <td class="number"><strong>${leads}</strong></td>
@@ -429,13 +622,13 @@
             <td class="number">${percent}%</td>
           </tr>
         `;
-      });
+        });
 
-      tbody.innerHTML = html;
-    }
+        tbody.innerHTML = html;
+      }
 
-    // Initialize
-    updateCharts();
-  </script>
-</body>
+      // Initialize
+      updateCharts();
+    </script>
+  </body>
 </html>
