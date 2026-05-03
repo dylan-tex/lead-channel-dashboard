@@ -70,6 +70,36 @@
         font-weight: 600;
         color: #2c2c2a;
       }
+
+      .kpi-value-input {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .kpi-input {
+        width: 100%;
+        border: 0.5px solid #d3d1c7;
+        border-radius: 6px;
+        background: #fff;
+        color: #2c2c2a;
+        font: inherit;
+        font-size: 20px;
+        font-weight: 600;
+        padding: 6px 8px;
+      }
+
+      .kpi-input.currency,
+      .kpi-input.percent {
+        padding-left: 0;
+      }
+
+      .kpi-unit {
+        font-size: 20px;
+        font-weight: 600;
+        color: #2c2c2a;
+      }
+
       .kpi-sub {
         font-size: 11px;
         color: #888780;
@@ -235,23 +265,87 @@
         <div class="kpi-grid">
           <div class="kpi-card">
             <div class="kpi-label">Leads Target</div>
-            <div class="kpi-value">75</div>
+            <div class="kpi-value kpi-value-input">
+              <input
+                class="kpi-input"
+                id="leadTargetInput"
+                type="number"
+                min="0"
+                step="1"
+                value="75"
+                oninput="updateCharts()"
+              />
+            </div>
             <div class="kpi-sub">Total leads needed monthly</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">Target Deals</div>
-            <div class="kpi-value">6</div>
-            <div class="kpi-sub">6 deals invoiced per month</div>
+            <div class="kpi-value kpi-value-input">
+              <input
+                class="kpi-input"
+                id="targetDealsInput"
+                type="number"
+                min="0"
+                step="1"
+                value="6"
+                oninput="updateCharts()"
+              />
+            </div>
+            <div class="kpi-sub">
+              <span id="targetDealsSummary">6 deals invoiced per month</span>
+            </div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">Target Invoiced Amount</div>
-            <div class="kpi-value">$8K</div>
-            <div class="kpi-sub">~$1,333 per deal</div>
+            <div class="kpi-value kpi-value-input">
+              <span class="kpi-unit">$</span>
+              <input
+                class="kpi-input currency"
+                id="revenueTargetInput"
+                type="number"
+                min="0"
+                step="100"
+                value="8000"
+                oninput="updateCharts()"
+              />
+            </div>
+            <div class="kpi-sub">
+              <span>Overall invoiced goal</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Amount Per Invoice</div>
+            <div class="kpi-value kpi-value-input">
+              <span class="kpi-unit">$</span>
+              <input
+                class="kpi-input currency"
+                id="amountPerInvoiceInput"
+                type="number"
+                min="0"
+                step="100"
+                value="1333"
+                oninput="updateCharts()"
+              />
+            </div>
+            <div class="kpi-sub">
+              <span id="amountPerInvoiceSummary">Used in channel revenue estimates</span>
+            </div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">Target Close Rate</div>
-            <div class="kpi-value">8%</div>
-            <div class="kpi-sub">Consistent across channels</div>
+            <div class="kpi-value kpi-value-input">
+              <input
+                class="kpi-input percent"
+                id="closeRateInput"
+                type="number"
+                min="0"
+                step="0.1"
+                value="8"
+                oninput="updateCharts()"
+              />
+              <span class="kpi-unit">%</span>
+            </div>
+            <div class="kpi-sub">Applied across charts and tables</div>
           </div>
         </div>
       </div>
@@ -436,7 +530,8 @@
           </div>
 
           <div class="total-box">
-            Total allocated: <strong id="totalAllocated">0</strong> / 75 leads
+            Total allocated: <strong id="totalAllocated">0</strong> /
+            <strong id="leadTargetDisplay">75</strong> leads
           </div>
         </div>
 
@@ -447,7 +542,7 @@
           </div>
 
           <div class="chart-container">
-            <div class="chart-title">
+            <div class="chart-title" id="dealsChartTitle">
               Estimated Deals by Channel (8% close rate)
             </div>
             <canvas id="dealsChart"></canvas>
@@ -462,7 +557,7 @@
             <tr>
               <th>Channel</th>
               <th class="number">Leads</th>
-              <th class="number">Deals (8% close rate)</th>
+              <th class="number" id="dealsHeader">Deals (8% close rate)</th>
               <th class="number">Est. Invoiced Amount</th>
               <th class="number">% of Total</th>
             </tr>
@@ -496,7 +591,69 @@
         Facebook: "#1877F2",
       };
 
+      function parseNumberInput(id) {
+        const value = parseFloat(document.getElementById(id).value);
+        return Number.isFinite(value) ? value : 0;
+      }
+
+      function formatCurrency(amount) {
+        return `$${Math.round(amount).toLocaleString()}`;
+      }
+
+      function formatRate(rate) {
+        return `${rate.toFixed(1).replace(/\.0$/, "")}%`;
+      }
+
+      function getSettings() {
+        const leadTarget = Math.max(0, Math.round(parseNumberInput("leadTargetInput")));
+        const targetDeals = Math.max(
+          0,
+          Math.round(parseNumberInput("targetDealsInput")),
+        );
+        const revenueTarget = Math.max(0, parseNumberInput("revenueTargetInput"));
+        const amountPerInvoice = Math.max(
+          0,
+          parseNumberInput("amountPerInvoiceInput"),
+        );
+        const closeRate = Math.max(0, parseNumberInput("closeRateInput"));
+
+        return {
+          leadTarget,
+          targetDeals,
+          revenueTarget,
+          amountPerInvoice,
+          closeRate,
+          closeRateDecimal: closeRate / 100,
+        };
+      }
+
+      function syncMetricText(settings) {
+        document.getElementById("leadTargetDisplay").textContent =
+          settings.leadTarget;
+        document.getElementById("targetDealsSummary").textContent =
+          `${settings.targetDeals} deals invoiced per month`;
+        document.getElementById("amountPerInvoiceSummary").textContent =
+          `${formatCurrency(settings.amountPerInvoice)} used in channel revenue estimates`;
+        document.getElementById("dealsChartTitle").textContent =
+          `Estimated Deals by Channel (${formatRate(settings.closeRate)} close rate)`;
+        document.getElementById("dealsHeader").textContent =
+          `Deals (${formatRate(settings.closeRate)} close rate)`;
+      }
+
+      function syncSliderBounds(leadTarget) {
+        document.querySelectorAll('input[type="range"]').forEach((slider) => {
+          slider.max = leadTarget;
+          if (parseInt(slider.value) > leadTarget) {
+            slider.value = leadTarget;
+          }
+        });
+      }
+
       function updateCharts() {
+        const settings = getSettings();
+        syncMetricText(settings);
+        syncSliderBounds(settings.leadTarget);
+
         const bandit = parseInt(document.getElementById("banditSlider").value);
         const brochure = parseInt(
           document.getElementById("brochureSlider").value,
@@ -561,12 +718,17 @@
           Facebook: facebook,
         };
 
-        drawBarChart(channels);
-        drawDealsChart(channels);
-        populateTable(channels, total);
+        drawBarChart(channels, settings.leadTarget);
+        drawDealsChart(channels, settings.closeRateDecimal);
+        populateTable(
+          channels,
+          total,
+          settings.closeRateDecimal,
+          settings.amountPerInvoice,
+        );
       }
 
-      function drawBarChart(channels) {
+      function drawBarChart(channels, leadTarget) {
         const ctx = document.getElementById("barChart").getContext("2d");
         if (window.barChartInstance) window.barChartInstance.destroy();
 
@@ -594,19 +756,19 @@
             },
             scales: {
               x: {
-                max: 75,
+                max: Math.max(leadTarget, 1),
               },
             },
           },
         });
       }
 
-      function drawDealsChart(channels) {
+      function drawDealsChart(channels, closeRate) {
         const ctx = document.getElementById("dealsChart").getContext("2d");
         if (window.dealsChartInstance) window.dealsChartInstance.destroy();
 
         const labels = Object.keys(channels).filter((k) => channels[k] > 0);
-        const deals = labels.map((l) => Math.round(channels[l] * 0.08));
+        const deals = labels.map((l) => Math.round(channels[l] * closeRate));
 
         window.dealsChartInstance = new Chart(ctx, {
           type: "bar",
@@ -631,9 +793,8 @@
         });
       }
 
-      function populateTable(channels, total) {
+      function populateTable(channels, total, closeRate, amountPerInvoice) {
         const tbody = document.getElementById("tableBody");
-        const avgDealValue = 1333;
         let totalDeals = 0;
         let totalRevenue = 0;
 
@@ -642,8 +803,8 @@
         Object.entries(channels).forEach(([channel, leads]) => {
           if (leads === 0) return;
 
-          const deals = Math.round(leads * 0.08);
-          const revenue = deals * avgDealValue;
+          const deals = Math.round(leads * closeRate);
+          const revenue = deals * amountPerInvoice;
           const percent = ((leads / total) * 100).toFixed(1);
           totalDeals += deals;
           totalRevenue += revenue;
@@ -653,7 +814,7 @@
             <td class="channel-name">${channel}</td>
             <td class="number"><strong>${leads}</strong></td>
             <td class="number">${deals}</td>
-            <td class="number">$${revenue.toLocaleString()}</td>
+            <td class="number">${formatCurrency(revenue)}</td>
             <td class="number">${percent}%</td>
           </tr>
         `;
@@ -663,7 +824,7 @@
         document.getElementById("totalLeads").textContent = total;
         document.getElementById("totalDeals").textContent = totalDeals;
         document.getElementById("totalRevenue").textContent =
-          `$${totalRevenue.toLocaleString()}`;
+          formatCurrency(totalRevenue);
         document.getElementById("totalPercent").textContent =
           total > 0 ? "100.0%" : "0.0%";
       }
